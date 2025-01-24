@@ -1,0 +1,12 @@
+.mainNavigation {
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.linkContainer {
+  display: flex;
+  align-items: center;
+  column-gap: 1rem;
+}

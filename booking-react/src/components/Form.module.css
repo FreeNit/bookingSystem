@@ -1,0 +1,38 @@
+.bookingHeader {
+  text-align: center;
+  padding: 1rem;
+  font-size: 3rem;
+}
+
+.formWrapper {
+  margin: 4rem auto;
+  width: 75%;
+}
+
+.buttonsWrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.form {
+  background-color: var(--color-dark--1);
+  border-radius: 7px;
+  padding: 2rem 3rem;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  color: var(--color-light--2)
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: relative;
+}
+
+:global(.datepicker) {
+  font-family: inherit;
+}
