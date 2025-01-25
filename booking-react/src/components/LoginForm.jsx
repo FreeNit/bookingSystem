@@ -1,83 +1,93 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { jwtDecode } from "jwt-decode";
 
 import styles from "./Form.module.css";
 
 import Button from "./Button";
 
+const schema = z.object({
+  email: z.string().email(),
+  password: z.string().min(5),
+});
+
 export default function LoginForm({ setUser }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  function handleInputChange(e) {
-    setEmail(e.target.value);
-  }
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm({ resolver: zodResolver(schema) });
 
-  function handlePassChange(e) {
-    setPassword(e.target.value);
-  }
+  const onSubmit = async (loginData) => {
+    try {
+      const loginResponse = await fetch("http://localhost:3000/users/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(loginData),
+      });
 
-  function handleFormSubmit(e) {
-    e.preventDefault();
-
-    const loginData = {
-      email: email,
-      password: password,
-    };
-
-    const loginResponse = fetch("http://localhost:3000/users/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(loginData),
-    });
-    loginResponse
-      .then((response) => response.json())
-      .then((data) => {
-        const userData = jwtDecode(data.token);
-        if (userData.userType === "client") {
-          navigate("/booking");
-        }
-        if (userData.userType === "admin") {
-          navigate("/admin");
-        }
-        setUser({ token: data.token, ...userData });
-      })
-      .catch((err) => console.log(err));
-  }
+      const data = await loginResponse.json();
+      const userData = jwtDecode(data.token);
+      if (userData.userType === "client") {
+        navigate("/booking");
+      }
+      if (userData.userType === "admin") {
+        navigate("/admin");
+      }
+      setUser({ token: data.token, ...userData });
+    } catch (error) {
+      setError("root", {
+        message: "Auth failed",
+      });
+    }
+  };
 
   return (
     <div className={styles.formWrapper}>
-      <form className={styles.form} onSubmit={handleFormSubmit}>
+      <form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
         <div className={styles.row}>
           <label htmlFor="email">Email</label>
           <input
+            {...register("email")}
             type="email"
             name="email"
-            required
             id="email"
-            value={email}
-            onChange={handleInputChange}
+            placeholder="email"
           />
+          {errors.email && (
+            <div className={styles.error}>{errors.email.message}</div>
+          )}
         </div>
 
         <div className={styles.row}>
           <label htmlFor="password">Password</label>
           <input
+            {...register("password")}
             type="password"
             name="password"
-            required
             id="password"
-            value={password}
-            onChange={handlePassChange}
-            min="4"
+            placeholder="password"
           />
+          {errors.password && (
+            <div className={styles.error}>{errors.password.message}</div>
+          )}
         </div>
 
         <div className={styles.buttons}>
-          <Button type="submit" text="Log in" />
+          <Button
+            type="submit"
+            text={isSubmitting ? "Loading..." : "Log in"}
+            disabled={isSubmitting}
+          />
         </div>
+        {errors.root && (
+          <div className={styles.error}>{errors.root.message}</div>
+        )}
       </form>
     </div>
   );

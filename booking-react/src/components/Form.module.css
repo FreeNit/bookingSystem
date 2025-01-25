@@ -36,3 +36,8 @@
 :global(.datepicker) {
   font-family: inherit;
 }
+
+.error {
+  color: var(--color-error);
+  font-size: 1.4rem;
+}

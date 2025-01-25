@@ -17,5 +17,11 @@
 .button:hover {
   color: var(--color-light--2);
   box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+}
 
+.button:disabled {
+  border: 1px solid #999999;
+  background-color: #cccccc;
+  color: #666666;
+  cursor: not-allowed;
 }

@@ -6,6 +6,7 @@
 :root {
   --color-cancel--1: #ffb545;
   --color-brand--2: #00c46a;
+  --color-error: tomato;
 
   --color-dark--0: #242a2e;
   --color-dark--1: #2d3439;
@@ -126,7 +127,7 @@ input:focus {
 
 .cta.active {
   color: var(--color-light--2);
-
+  cursor: not-allowed;
 }
 
 .cta:hover {
