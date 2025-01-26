@@ -46,26 +46,6 @@ export default function SignupForm() {
     }
   };
 
-  // function handleFormSubmit() {
-  //   const formData = new FormData(e.target);
-  //   const formValues = Object.fromEntries(formData);
-
-  //   const response = fetch("http://localhost:3000/users/signup", {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify(formValues),
-  //   });
-  //   response
-  //     .then((response) => {
-  //       if (response.status === 201 && response.ok) {
-  //         navigate("/signin");
-  //       }
-  //     })
-  //     .catch((err) => {
-  //       console.log({ err });
-  //     });
-  // }
-
   return (
     <div className={styles.formWrapper}>
       <form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
