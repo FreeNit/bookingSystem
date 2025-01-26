@@ -46,19 +46,19 @@ exports.bookings_create_newBooking = (req, res, next) => {
 
   booking
     .save()
-    .then((result) => {
-      res.status(201).json({
-        message: "Booking successfully created",
-        newBooking: {
-          _id: result.id,
-          requestor: result.user,
-          businessUser: result.businessUser,
-          date: result.date,
-          duration: result.duration,
-          status: result.status,
-        },
-      });
+    .then(() => {
+      Booking.find({ _id: booking._id })
+        .select("_id user date duration status")
+        .populate("businessUser", "_id userName email userType")
+        .exec()
+        .then((docs) => {
+          res.status(201).json({
+            message: "Booking successfully created",
+            newBooking: docs[0],
+          });
+        });
     })
+
     .catch((err) => {
       res.status(500).json({
         message: "Booking not created! Please try again.",

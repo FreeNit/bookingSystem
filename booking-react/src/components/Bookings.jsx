@@ -14,7 +14,8 @@ export default function Bookings({
 }) {
   return (
     <>
-      {bookings.length !== 0 && (
+      {}
+      {bookings.length !== 0 ? (
         <div className={styles.gridContainer}>
           {bookings
             .sort((a, b) => {
@@ -38,6 +39,8 @@ export default function Bookings({
               />
             ))}
         </div>
+      ) : (
+        <p>Loading...</p>
       )}
     </>
   );

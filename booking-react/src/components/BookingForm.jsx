@@ -1,6 +1,21 @@
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import moment from "moment";
+
 import styles from "./Form.module.css";
 
 import Button from "./Button";
+
+const schema = z.object({
+  businessClient: z.string().min(5),
+  bookingDate: z.string().min(10),
+  status: z.string().min(3),
+  duration: z.coerce
+    .number()
+    .positive()
+    .lte(5, { message: "Booking not longer than 5 hours" }),
+});
 
 export default function BookingForm({
   user,
@@ -20,105 +35,95 @@ export default function BookingForm({
   setBookings,
   bookings,
 }) {
-  // -> Create | Update booking
-  function handleSubmitForm(e, operationType = "new") {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm({ resolver: zodResolver(schema) });
 
-    if (operationType === "new") {
-      const newBooking = {
-        user: user.userId,
-        businessUser: businessClient,
-        duration: duration,
-        date: new Date(date).toISOString(),
-      };
+  const onSubmit = async (bookingData) => {
+    try {
+      if (!isEditable) {
+        const newBooking = {
+          user: user.userId,
+          businessUser: bookingData.businessClient,
+          duration: bookingData.duration,
+          date: new Date(bookingData.bookingDate).toISOString(),
+        };
 
-      const response = fetch("http://localhost:3000/bookings", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newBooking),
-      });
+        const createBookingURL = "http://localhost:3000/bookings";
+        const responseBooking = await fetch(createBookingURL, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(newBooking),
+        });
 
-      response
-        .then((resp) => {
-          if (resp.status === 201 && resp.ok) {
-            // -> Retrieve Bookings
-            const bookingURL = `http://localhost:3000/bookings/${user.userType}/${user.userId}`;
-            const bookingsRetrieve = fetch(bookingURL, {
-              headers: {
-                Authorization: `Bearer ${user.token}`,
-                "Content-Type": "application/json",
-              },
-            });
-            bookingsRetrieve
-              .then((bookingResponse) => bookingResponse.json())
-              .then((dataBookings) => {
-                if (dataBookings.count > 0) {
-                  setBookings(dataBookings.bookings);
-                }
-              })
-              .catch((err) => console.log(err));
-          }
-        })
-        .catch((err) => console.log(err));
-    }
-
-    if (operationType === "update") {
-      const booking = {
-        user: user.userId,
-        businessUser: businessClient,
-        duration: duration,
-        date: new Date(date).toISOString(),
-        status: status,
-      };
-
-      const updatedBooking = [];
-      for (const property in booking) {
-        updatedBooking.push({ propName: property, value: booking[property] });
+        if (responseBooking.status === 201 && responseBooking.ok) {
+          const response = await responseBooking.json();
+          setBookings((bookings) => [...bookings, response.newBooking]);
+        }
       }
-
-      const bookingId = searchParams.get("bookingId");
-      const bookingUpdateURL = `http://localhost:3000/bookings/${bookingId}`;
-      const response = fetch(bookingUpdateURL, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedBooking),
+      // -> Update Booking
+      if (isEditable) {
+        const booking = {
+          user: user.userId,
+          businessUser: bookingData.businessClient,
+          duration: bookingData.duration,
+          date: new Date(bookingData.bookingDate).toISOString(),
+          status: status,
+        };
+        const updatedBooking = [];
+        for (const property in booking) {
+          updatedBooking.push({ propName: property, value: booking[property] });
+        }
+        const bookingId = searchParams.get("bookingId");
+        const bookingUpdateURL = `http://localhost:3000/bookings/${bookingId}`;
+        const response = fetch(bookingUpdateURL, {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedBooking),
+        });
+        response
+          .then((res) => res.json())
+          .then((data) => {
+            const bookingIndexToReplace = bookings.findIndex(
+              (booking) => booking._id === data.updatedBooking._id
+            );
+            const newBookings = bookings.toSpliced(
+              bookingIndexToReplace,
+              1,
+              data.updatedBooking
+            );
+            setBookings(newBookings);
+            setIsEditable(false);
+            setSearchParams("");
+          })
+          .catch((err) => console.log(err));
+      }
+      setBusinessClient();
+      setDate(moment().format("YYYY-MM-DDTHH:mm:ss"));
+      setDuration(1);
+    } catch (error) {
+      setError("root", {
+        message: error.message,
       });
-      response
-        .then((res) => res.json())
-        .then((data) => {
-          const bookingIndexToReplace = bookings.findIndex(
-            (booking) => booking._id === data.updatedBooking._id
-          );
-          const newBookings = bookings.toSpliced(
-            bookingIndexToReplace,
-            1,
-            data.updatedBooking
-          );
-          setBookings(newBookings);
-          setIsEditable(false);
-          setSearchParams("");
-        })
-        .catch((err) => console.log(err));
     }
-
-    setBusinessClient("");
-    setDate("");
-    setDuration("");
-  }
+  };
 
   // -> Cancel modification
   function handleCancel() {
     setSearchParams("");
     setIsEditable(false);
-    setBusinessClient("");
-    setDate("");
-    setDuration("");
+    setBusinessClient();
+    setDate(moment().format("YYYY-MM-DDTHH:mm:ss"));
+    setDuration(1);
   }
 
   return (
@@ -127,13 +132,13 @@ export default function BookingForm({
         {isEditable ? "Update Current Booking" : "Create New Booking"}
       </p>
 
-      <form className={styles.form}>
+      <form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
         <div className={styles.row}>
           <label htmlFor="businessUser">Business Client</label>
           <select
+            {...register("businessClient")}
             name="businessUser"
             id="businessUser"
-            required
             value={businessClient}
             onChange={(e) => setBusinessClient(e.target.value)}
           >
@@ -143,56 +148,67 @@ export default function BookingForm({
               </option>
             ))}
           </select>
+          {errors.businessClient && (
+            <div className={styles.error}>{errors.businessClient.message}</div>
+          )}
         </div>
 
         <div className={styles.row}>
           <label htmlFor="date">Booking Date</label>
           <input
+            {...register("bookingDate")}
             className="datepicker"
             type="datetime-local"
             name="date"
-            required
             id="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
           />
+          {errors.bookingDate && (
+            <div className={styles.error}>{errors.bookingDate.message}</div>
+          )}
         </div>
 
         <div className={styles.row}>
           <label htmlFor="duration">Duration (in hours)</label>
           <input
+            {...register("duration")}
             type="number"
             name="duration"
-            required
-            min="1"
             id="duration"
             value={duration}
-            onChange={(e) => setDuration(e.target.value)}
+            onChange={(e) => setDuration(e.target.valueAsNumber)}
           />
+          {errors.duration && (
+            <div className={styles.error}>{errors.duration.message}</div>
+          )}
         </div>
 
-        {isEditable && (
-          <div className={styles.row}>
-            <label htmlFor="bookingStatus">Booking Status</label>
-            <select
-              name="bookingStatus"
-              id="bookingStatus"
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-            >
-              <option value="new">New</option>
-              <option value="cancel">Cancel</option>
-            </select>
-          </div>
-        )}
+        <div className={styles.row}>
+          <label htmlFor="bookingStatus">Booking Status</label>
+          <select
+            {...register("status")}
+            name="bookingStatus"
+            id="bookingStatus"
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            disabled={!isEditable}
+          >
+            <option value="new">New</option>
+            <option value="cancel">Cancel</option>
+          </select>
+          {errors.status && (
+            <div className={styles.error}>{errors.status.message}</div>
+          )}
+        </div>
 
         {isEditable && (
           <>
             <div className={styles.buttonsWrapper}>
               <Button
                 type="submit"
-                text="save"
-                handleClick={(e) => handleSubmitForm(e, "update")}
+                text={isSubmitting ? "Loading..." : "Save"}
+                disabled={isSubmitting}
               />
               <Button type="button" text="cancel" handleClick={handleCancel} />
             </div>
@@ -203,10 +219,14 @@ export default function BookingForm({
           <div className={styles.buttons}>
             <Button
               type="submit"
-              text="Create new"
-              handleClick={handleSubmitForm}
+              text={isSubmitting ? "Loading..." : "Create new"}
+              disabled={isSubmitting}
             />
           </div>
+        )}
+
+        {errors.root && (
+          <div className={styles.error}>{errors.root.message}</div>
         )}
       </form>
     </div>

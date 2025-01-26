@@ -10,11 +10,11 @@ export default function Booking({ user }) {
   const [isLoading, setIsLoading] = useState();
   const [businessClient, setBusinessClient] = useState();
   const [businessClients, setBusinessClients] = useState([]);
-  const [date, setDate] = useState();
-  const [duration, setDuration] = useState();
-  const [status, setStatus] = useState();
+  const [date, setDate] = useState(moment().format("YYYY-MM-DDTHH:mm:ss"));
+  const [duration, setDuration] = useState(1);
+  const [status, setStatus] = useState("new");
   const [isEditable, setIsEditable] = useState(false);
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams("");
 
   // -> Retrieve bookings and business users
   useEffect(() => {
