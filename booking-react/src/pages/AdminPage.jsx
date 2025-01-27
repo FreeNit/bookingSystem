@@ -15,12 +15,15 @@ export default function Adminpage({ user }) {
     const fetchUsers = async () => {
       setIsLoading(true);
 
-      const response = await fetch("http://localhost:3000/users", {
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        "https://booking-system-2hms.onrender.com/users",
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
       const data = await response.json();
       setUsers(data.users);
 
@@ -31,13 +34,16 @@ export default function Adminpage({ user }) {
   }, []);
 
   function handleDeleteUser(userId) {
-    const response = fetch(`http://localhost:3000/users/${userId}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${user.token}`,
-        "Content-Type": "application/json",
-      },
-    });
+    const response = fetch(
+      `https://booking-system-2hms.onrender.com/users/${userId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     response
       .then((result) => {

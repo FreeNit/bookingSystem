@@ -52,7 +52,8 @@ export default function BookingForm({
           date: new Date(bookingData.bookingDate).toISOString(),
         };
 
-        const createBookingURL = "http://localhost:3000/bookings";
+        const createBookingURL =
+          "https://booking-system-2hms.onrender.com/bookings";
         const responseBooking = await fetch(createBookingURL, {
           method: "POST",
           headers: {
@@ -81,7 +82,7 @@ export default function BookingForm({
           updatedBooking.push({ propName: property, value: booking[property] });
         }
         const bookingId = searchParams.get("bookingId");
-        const bookingUpdateURL = `http://localhost:3000/bookings/${bookingId}`;
+        const bookingUpdateURL = `https://booking-system-2hms.onrender.com/bookings/${bookingId}`;
         const response = fetch(bookingUpdateURL, {
           method: "PATCH",
           headers: {

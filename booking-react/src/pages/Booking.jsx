@@ -22,7 +22,7 @@ export default function Booking({ user }) {
       setIsLoading(true);
 
       // -> Retrieve Bookings
-      const bookingURL = `http://localhost:3000/bookings/${user.userType}/${user.userId}`;
+      const bookingURL = `https://booking-system-2hms.onrender.com/bookings/${user.userType}/${user.userId}`;
       const bookingsRetrieve = await fetch(bookingURL, {
         headers: {
           Authorization: `Bearer ${user.token}`,
@@ -35,7 +35,8 @@ export default function Booking({ user }) {
       }
 
       // -> Retrieve BUSINESS Users
-      const businessUserURL = "http://localhost:3000/users/business";
+      const businessUserURL =
+        "https://booking-system-2hms.onrender.com/users/business";
       const businessUsersRetrieve = await fetch(businessUserURL, {
         headers: {
           Authorization: `Bearer ${user.token}`,

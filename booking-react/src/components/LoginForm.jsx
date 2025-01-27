@@ -25,11 +25,14 @@ export default function LoginForm({ setUser }) {
 
   const onSubmit = async (loginData) => {
     try {
-      const loginResponse = await fetch("http://localhost:3000/users/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(loginData),
-      });
+      const loginResponse = await fetch(
+        "https://booking-system-2hms.onrender.com/users/login",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(loginData),
+        }
+      );
 
       const data = await loginResponse.json();
       const userData = jwtDecode(data.token);

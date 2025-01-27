@@ -25,7 +25,8 @@ export default function SignupForm() {
 
   const onSubmit = async (signUpData) => {
     try {
-      const signUpURL = await "http://localhost:3000/users/signup";
+      const signUpURL =
+        await "https://booking-system-2hms.onrender.com/users/signup";
       const signUpResponse = await fetch(signUpURL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

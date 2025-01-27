@@ -23,7 +23,7 @@ export default function EditUserForm({
       { propName: "email", value: newUserEmail },
     ];
 
-    const updateUserURL = `http://localhost:3000/users/${user._id}`;
+    const updateUserURL = `https://booking-system-2hms.onrender.com/users/${user._id}`;
     const response = fetch(updateUserURL, {
       method: "PATCH",
       headers: {
